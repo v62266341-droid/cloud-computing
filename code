@@ -1,36 +1,244 @@
-// College Event Registration System
-// Set Registration Status and Send Notification
+// ============================================================
+// CLOUD-BASED COLLEGE EVENT REGISTRATION SYSTEM
+// Zoho Creator - Complete Deluge Workflow
+// ============================================================
 
-// Set default registration status
+// ------------------------------------------------------------
+// STEP 1: AUTOMATIC REGISTRATION DATE
+// ------------------------------------------------------------
+
+input.Registration_Date = zoho.currentdate;
+
+
+// ------------------------------------------------------------
+// STEP 2: SET DEFAULT REGISTRATION STATUS
+// ------------------------------------------------------------
+
 input.Registration_Status = "Pending";
 
-// Check for duplicate registration
-existing = Event_Registration_Form[
+
+// ------------------------------------------------------------
+// STEP 3: VALIDATE STUDENT NAME
+// ------------------------------------------------------------
+
+if(input.Student_Name == null || input.Student_Name.trim() == "")
+{
+    alert "Student Name is required.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 4: VALIDATE REGISTER NUMBER
+// ------------------------------------------------------------
+
+if(input.Register_Number == null || input.Register_Number.trim() == "")
+{
+    alert "Register Number is required.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 5: VALIDATE DEPARTMENT
+// ------------------------------------------------------------
+
+if(input.Department == null || input.Department == "")
+{
+    alert "Please select your Department.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 6: VALIDATE YEAR
+// ------------------------------------------------------------
+
+if(input.Year == null || input.Year == "")
+{
+    alert "Please select your Year.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 7: VALIDATE EVENT NAME
+// ------------------------------------------------------------
+
+if(input.Event_Name == null || input.Event_Name == "")
+{
+    alert "Please select an Event.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 8: VALIDATE PARTICIPATION TYPE
+// ------------------------------------------------------------
+
+if(input.Participation_Type == null || input.Participation_Type == "")
+{
+    alert "Please select Participation Type.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 9: VALIDATE CONTACT DETAILS
+// ------------------------------------------------------------
+
+if(input.Contact_Details == null || input.Contact_Details.trim() == "")
+{
+    alert "Contact Details are required.";
+    cancel submit;
+}
+
+
+// ------------------------------------------------------------
+// STEP 10: CHECK DUPLICATE REGISTRATION
+// A student cannot register twice for the same event
+// ------------------------------------------------------------
+
+duplicate_registration = Event_Registration_Form[
     Register_Number == input.Register_Number
     && Event_Name == input.Event_Name
 ];
 
-if(existing.count() > 0)
+if(duplicate_registration.count() > 0)
 {
-    alert "You have already registered for this event.";
+    alert "Duplicate Registration!";
+    alert "You have already registered for " + input.Event_Name + ".";
     cancel submit;
 }
-else
+
+
+// ------------------------------------------------------------
+// STEP 11: CHECK VALID PARTICIPATION TYPE
+// ------------------------------------------------------------
+
+if(input.Participation_Type != "Individual" 
+&& input.Participation_Type != "Team")
 {
-    // Send notification email to event coordinator
-    sendmail
-    [
-        from : zoho.adminuserid
-        to : "coordinator@college.edu"
-        subject : "New College Event Registration"
-        message : "A new student registration has been received."
-            + "<br><br><b>Student Name:</b> " + input.Student_Name
-            + "<br><b>Register Number:</b> " + input.Register_Number
-            + "<br><b>Department:</b> " + input.Department
-            + "<br><b>Year:</b> " + input.Year
-            + "<br><b>Event Name:</b> " + input.Event_Name
-            + "<br><b>Participation Type:</b> " + input.Participation_Type
-            + "<br><b>Contact Details:</b> " + input.Contact_Details
-            + "<br><b>Registration Status:</b> Pending";
-    ];
+    alert "Invalid Participation Type.";
+    cancel submit;
 }
+
+
+// ------------------------------------------------------------
+// STEP 12: CHECK VALID REGISTRATION STATUS
+// ------------------------------------------------------------
+
+input.Registration_Status = "Pending";
+
+
+// ------------------------------------------------------------
+// STEP 13: PREPARE STUDENT INFORMATION
+// ------------------------------------------------------------
+
+student_name = input.Student_Name;
+register_number = input.Register_Number;
+department = input.Department;
+year = input.Year;
+event_name = input.Event_Name;
+participation_type = input.Participation_Type;
+contact = input.Contact_Details;
+registration_date = input.Registration_Date;
+
+
+// ------------------------------------------------------------
+// STEP 14: SEND EMAIL TO EVENT COORDINATOR
+// ------------------------------------------------------------
+
+sendmail
+[
+    from : zoho.adminuserid
+    to : "coordinator@college.edu"
+    subject : "New College Event Registration - " + event_name
+    message : 
+    "<html>"
+    + "<body>"
+    + "<h2>New College Event Registration</h2>"
+    + "<p>A new student has registered for a college event.</p>"
+    
+    + "<h3>Student Details</h3>"
+    
+    + "<table border='1' cellpadding='8' cellspacing='0'>"
+    
+    + "<tr>"
+    + "<td><b>Student Name</b></td>"
+    + "<td>" + student_name + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Register Number</b></td>"
+    + "<td>" + register_number + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Department</b></td>"
+    + "<td>" + department + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Year</b></td>"
+    + "<td>" + year + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Event Name</b></td>"
+    + "<td>" + event_name + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Participation Type</b></td>"
+    + "<td>" + participation_type + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Contact Details</b></td>"
+    + "<td>" + contact + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Registration Date</b></td>"
+    + "<td>" + registration_date + "</td>"
+    + "</tr>"
+    
+    + "<tr>"
+    + "<td><b>Registration Status</b></td>"
+    + "<td>Pending</td>"
+    + "</tr>"
+    
+    + "</table>"
+    
+    + "<br>"
+    + "<p>Please verify the registration and update the status to "
+    + "<b>Confirmed</b> or <b>Cancelled</b>.</p>"
+    
+    + "</body>"
+    + "</html>"
+];
+
+
+// ------------------------------------------------------------
+// STEP 15: LOG INFORMATION
+// ------------------------------------------------------------
+
+info "----------------------------------------";
+info "REGISTRATION SUCCESSFUL";
+info "Student Name: " + student_name;
+info "Register Number: " + register_number;
+info "Department: " + department;
+info "Year: " + year;
+info "Event: " + event_name;
+info "Participation Type: " + participation_type;
+info "Registration Date: " + registration_date;
+info "Status: Pending";
+info "----------------------------------------";
+
+
+// ------------------------------------------------------------
+// STEP 16: FINAL CONFIRMATION
+// ------------------------------------------------------------
+
+alert "Registration submitted successfully!";
